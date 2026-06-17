@@ -13,6 +13,7 @@ import StreakBadge from '../components/StreakBadge'
 import SmartInsight from '../components/SmartInsight'
 import DayRing from '../components/DayRing'
 import GridBackground from '../components/GridBackground'
+import AmbientOrbs from '../components/AmbientOrbs'
 
 export default function Dashboard() {
   const { user } = useAuth()
@@ -76,9 +77,10 @@ export default function Dashboard() {
   const totalSeconds = entries.reduce((sum, e) => sum + e.duration_seconds, 0)
   const sortedCategories = Object.entries(categoryTotals).sort((a, b) => b[1] - a[1])
 
-  return (
-    <div style={{ ...s.page, background: theme.bg, color: theme.text }}>
-      <GridBackground />
+return (
+  <div style={{ ...s.page, background: theme.bg, color: theme.text }}>
+    <AmbientOrbs />
+    <GridBackground />
 
       <div style={s.content}>
         <Navbar user={user} />
