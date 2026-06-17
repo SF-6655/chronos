@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
 import { useTheme } from '../lib/ThemeContext'
+import { useAutoScale } from '../hooks/useAutoScale'
 import Navbar from '../components/Navbar'
 import Timer from '../components/Timer'
 import StatsCards from '../components/StatsCards'
@@ -15,6 +16,7 @@ import DayRing from '../components/DayRing'
 export default function Dashboard() {
   const { user } = useAuth()
   const { theme } = useTheme()
+  const { scale } = useAutoScale(1600, 880)
   const [entries, setEntries] = useState([])
   const [loading, setLoading] = useState(true)
   const [showTable, setShowTable] = useState(false)
@@ -66,90 +68,97 @@ export default function Dashboard() {
     <div style={{ ...s.page, background: theme.bg, color: theme.text }}>
       <Navbar user={user} />
 
-      <div style={{ padding: '0 20px' }}>
-        <SmartInsight entries={entries} />
-      </div>
-
-      <div style={s.layout}>
-        {/* Left Column — Timer */}
-        <div style={s.leftCol}>
-          <div style={s.colHeader}>
-            <span style={{ ...s.colLabel, color: theme.textMuted }}>Timer</span>
-            <StreakBadge entries={entries} />
-          </div>
-          <div style={s.timerWrapper}>
-            <Timer user={user} onEntryAdded={fetchEntries} triggerRef={timerActionRef} />
-          </div>
-        </div>
-
-        {/* Middle Column — Chart + Sessions */}
-        <div style={s.midCol}>
-          <div style={s.colHeader}>
-            <span style={{ ...s.colLabel, color: theme.textMuted }}>Weekly Overview</span>
-          </div>
-          <div style={s.chartWrapper}>
-            <WeeklyChart entries={entries} />
-          </div>
-          <div style={{ ...s.colHeader, marginTop: 12 }}>
-            <span style={{ ...s.colLabel, color: theme.textMuted }}>Sessions</span>
-          </div>
-          <div style={s.sessionsWrapper}>
-            <RecentSessions entries={entries} onViewAll={() => setShowTable(true)} />
-          </div>
-        </div>
-
-        {/* Right Column — Stats */}
-        <div style={s.rightCol}>
-          <div style={s.colHeader}>
-            <span style={{ ...s.colLabel, color: theme.textMuted }}>Stats</span>
+      <div style={s.scaleOuter}>
+        <div style={{
+          ...s.scaleInner,
+          transform: `scale(${scale})`,
+        }}>
+          <div style={{ padding: '0 0 12px' }}>
+            <SmartInsight entries={entries} />
           </div>
 
-          <DayRing entries={entries} />
+          <div style={s.layout}>
+            {/* Left Column — Timer */}
+            <div style={s.leftCol}>
+              <div style={s.colHeader}>
+                <span style={{ ...s.colLabel, color: theme.textMuted }}>Timer</span>
+                <StreakBadge entries={entries} />
+              </div>
+              <div style={s.timerWrapper}>
+                <Timer user={user} onEntryAdded={fetchEntries} triggerRef={timerActionRef} />
+              </div>
+            </div>
 
-          <div style={{ marginTop: 10 }}>
-            <StatsCards entries={entries} />
-          </div>
+            {/* Middle Column — Chart + Sessions */}
+            <div style={s.midCol}>
+              <div style={s.colHeader}>
+                <span style={{ ...s.colLabel, color: theme.textMuted }}>Weekly Overview</span>
+              </div>
+              <div style={s.chartWrapper}>
+                <WeeklyChart entries={entries} />
+              </div>
+              <div style={{ ...s.colHeader, marginTop: 10 }}>
+                <span style={{ ...s.colLabel, color: theme.textMuted }}>Sessions</span>
+              </div>
+              <div style={s.sessionsWrapper}>
+                <RecentSessions entries={entries} onViewAll={() => setShowTable(true)} />
+              </div>
+            </div>
 
-          <div style={{
-            ...s.breakdown,
-            background: theme.bgSecondary,
-            border: `1px solid ${theme.border}`,
-            boxShadow: theme.cardShadow,
-          }}>
-            <div style={{ ...s.breakdownTitle, color: theme.textSecondary }}>Category breakdown</div>
-            {Object.entries(
-              entries.reduce((acc, e) => {
-                acc[e.category] = (acc[e.category] || 0) + e.duration_seconds
-                return acc
-              }, {})
-            )
-              .sort((a, b) => b[1] - a[1])
-              .map(([cat, secs]) => {
-                const total = entries.reduce((sum, e) => sum + e.duration_seconds, 0)
-                const pct = total > 0 ? Math.round((secs / total) * 100) : 0
-                const colors = {
-                  Study: '#7c6ef5', Work: '#60a5fa', Health: '#4ade80',
-                  Lifestyle: '#f59e0b', 'Side Project': '#f472b6', Social: '#34d399',
-                }
-                const color = colors[cat] || '#7c6ef5'
-                return (
-                  <div key={cat} style={s.breakdownRow}>
-                    <div style={s.breakdownLeft}>
-                      <div style={{ ...s.breakdownDot, background: color }} />
-                      <span style={{ ...s.breakdownCat, color: theme.text }}>{cat}</span>
-                    </div>
-                    <div style={s.breakdownRight}>
-                      <div style={{ ...s.breakdownBar, background: theme.bgTertiary }}>
-                        <div style={{ ...s.breakdownFill, width: `${pct}%`, background: color }} />
-                      </div>
-                      <span style={{ ...s.breakdownPct, color: theme.textMuted }}>{pct}%</span>
-                    </div>
-                  </div>
+            {/* Right Column — Stats */}
+            <div style={s.rightCol}>
+              <div style={s.colHeader}>
+                <span style={{ ...s.colLabel, color: theme.textMuted }}>Stats</span>
+              </div>
+
+              <DayRing entries={entries} />
+
+              <div style={{ marginTop: 8 }}>
+                <StatsCards entries={entries} />
+              </div>
+
+              <div style={{
+                ...s.breakdown,
+                background: theme.bgSecondary,
+                border: `1px solid ${theme.border}`,
+                boxShadow: theme.cardShadow,
+              }}>
+                <div style={{ ...s.breakdownTitle, color: theme.textSecondary }}>Category breakdown</div>
+                {Object.entries(
+                  entries.reduce((acc, e) => {
+                    acc[e.category] = (acc[e.category] || 0) + e.duration_seconds
+                    return acc
+                  }, {})
                 )
-              })}
-            {entries.length === 0 && (
-              <p style={{ fontSize: 12, color: theme.textMuted, textAlign: 'center', padding: '16px 0' }}>No data yet</p>
-            )}
+                  .sort((a, b) => b[1] - a[1])
+                  .map(([cat, secs]) => {
+                    const total = entries.reduce((sum, e) => sum + e.duration_seconds, 0)
+                    const pct = total > 0 ? Math.round((secs / total) * 100) : 0
+                    const colors = {
+                      Study: '#7c6ef5', Work: '#60a5fa', Health: '#4ade80',
+                      Lifestyle: '#f59e0b', 'Side Project': '#f472b6', Social: '#34d399',
+                    }
+                    const color = colors[cat] || '#7c6ef5'
+                    return (
+                      <div key={cat} style={s.breakdownRow}>
+                        <div style={s.breakdownLeft}>
+                          <div style={{ ...s.breakdownDot, background: color }} />
+                          <span style={{ ...s.breakdownCat, color: theme.text }}>{cat}</span>
+                        </div>
+                        <div style={s.breakdownRight}>
+                          <div style={{ ...s.breakdownBar, background: theme.bgTertiary }}>
+                            <div style={{ ...s.breakdownFill, width: `${pct}%`, background: color }} />
+                          </div>
+                          <span style={{ ...s.breakdownPct, color: theme.textMuted }}>{pct}%</span>
+                        </div>
+                      </div>
+                    )
+                  })}
+                {entries.length === 0 && (
+                  <p style={{ fontSize: 12, color: theme.textMuted, textAlign: 'center', padding: '16px 0' }}>No data yet</p>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -165,20 +174,27 @@ export default function Dashboard() {
 }
 
 const s = {
-  page: { minHeight: '100vh', display: 'flex', flexDirection: 'column', paddingTop: 12 },
+  page: { height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' },
+  scaleOuter: {
+    flex: 1, display: 'flex', justifyContent: 'center',
+    alignItems: 'flex-start', overflow: 'hidden', position: 'relative',
+  },
+  scaleInner: {
+    width: 1600, flexShrink: 0, transformOrigin: 'top center',
+    padding: '14px 20px 0',
+  },
   layout: {
     display: 'grid', gridTemplateColumns: '300px 1fr 280px', gap: 16,
-    padding: '12px 20px 16px', flex: 1, maxWidth: 1450, width: '100%', margin: '0 auto',
   },
   leftCol: { display: 'flex', flexDirection: 'column', overflow: 'hidden' },
   midCol: { display: 'flex', flexDirection: 'column', overflow: 'hidden' },
   rightCol: { display: 'flex', flexDirection: 'column', overflow: 'hidden' },
   colHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
   colLabel: { fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1 },
-  timerWrapper: { flex: 1, overflow: 'hidden' },
+  timerWrapper: {},
   chartWrapper: { flexShrink: 0 },
-  sessionsWrapper: { flex: 1, overflow: 'hidden', minHeight: 0 },
-  breakdown: { borderRadius: 14, padding: '16px', marginTop: 10, flex: 1 },
+  sessionsWrapper: {},
+  breakdown: { borderRadius: 14, padding: '16px', marginTop: 10 },
   breakdownTitle: { fontSize: 14, fontWeight: 600, marginBottom: 14 },
   breakdownRow: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, gap: 8 },
   breakdownLeft: { display: 'flex', alignItems: 'center', gap: 7, minWidth: 90 },
