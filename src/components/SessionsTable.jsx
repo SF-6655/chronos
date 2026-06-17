@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useTheme } from '../lib/ThemeContext'
+import { useAutoScale } from '../hooks/useAutoScale'
 
 const CATEGORY_COLORS = {
   Study: '#7c6ef5',
@@ -39,6 +40,7 @@ function formatClockTime(dateStr) {
 
 export default function SessionsTable({ entries, isOpen, onClose, onDeleted }) {
   const { theme } = useTheme()
+  const { scale } = useAutoScale(1600, 880)
   const [filterCategory, setFilterCategory] = useState('All')
   const [sortBy, setSortBy] = useState('newest')
 
@@ -66,101 +68,105 @@ export default function SessionsTable({ entries, isOpen, onClose, onDeleted }) {
       background: theme.bg,
       transform: isOpen ? 'translateX(0)' : 'translateX(100%)',
     }}>
-      <div style={{ ...s.header, borderBottom: `1px solid ${theme.border}` }}>
-        <button onClick={onClose} style={{ ...s.backBtn, color: theme.textSecondary, border: `1px solid ${theme.border}` }}>
-          ← Back to dashboard
-        </button>
-        <h1 style={{ ...s.title, color: theme.text }}>All sessions</h1>
-        <span style={{ ...s.count, color: theme.textMuted }}>{filtered.length} entries</span>
-      </div>
+      <div style={s.scaleOuter}>
+        <div style={{ ...s.scaleInner, transform: `scale(${scale})` }}>
+          <div style={{ ...s.header, borderBottom: `1px solid ${theme.border}` }}>
+            <button onClick={onClose} style={{ ...s.backBtn, color: theme.textSecondary, border: `1px solid ${theme.border}` }}>
+              ← Back to dashboard
+            </button>
+            <h1 style={{ ...s.title, color: theme.text }}>All sessions</h1>
+            <span style={{ ...s.count, color: theme.textMuted }}>{filtered.length} entries</span>
+          </div>
 
-      <div style={s.controls}>
-        <div style={s.filterRow}>
-          {categories.map(cat => (
-            <button
-              key={cat}
-              onClick={() => setFilterCategory(cat)}
+          <div style={s.controls}>
+            <div style={s.filterRow}>
+              {categories.map(cat => (
+                <button
+                  key={cat}
+                  onClick={() => setFilterCategory(cat)}
+                  style={{
+                    ...s.filterBtn,
+                    background: filterCategory === cat ? (CATEGORY_COLORS[cat] || theme.accent) : theme.bgTertiary,
+                    color: filterCategory === cat ? '#fff' : theme.textMuted,
+                    border: `1px solid ${filterCategory === cat ? (CATEGORY_COLORS[cat] || theme.accent) : theme.border}`,
+                  }}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
               style={{
-                ...s.filterBtn,
-                background: filterCategory === cat ? (CATEGORY_COLORS[cat] || theme.accent) : theme.bgTertiary,
-                color: filterCategory === cat ? '#fff' : theme.textMuted,
-                border: `1px solid ${filterCategory === cat ? (CATEGORY_COLORS[cat] || theme.accent) : theme.border}`,
+                ...s.sortSelect,
+                background: theme.bgTertiary,
+                border: `1px solid ${theme.border}`,
+                color: theme.text,
               }}
             >
-              {cat}
-            </button>
-          ))}
-        </div>
+              <option value="newest">Newest first</option>
+              <option value="oldest">Oldest first</option>
+              <option value="longest">Longest first</option>
+            </select>
+          </div>
 
-        <select
-          value={sortBy}
-          onChange={(e) => setSortBy(e.target.value)}
-          style={{
-            ...s.sortSelect,
-            background: theme.bgTertiary,
-            border: `1px solid ${theme.border}`,
-            color: theme.text,
-          }}
-        >
-          <option value="newest">Newest first</option>
-          <option value="oldest">Oldest first</option>
-          <option value="longest">Longest first</option>
-        </select>
-      </div>
+          <div style={s.tableWrapper}>
+            <div style={{ ...s.tableHeader, borderBottom: `1px solid ${theme.border}`, color: theme.textMuted }}>
+              <span style={s.colDate}>Date</span>
+              <span style={s.colCategory}>Category</span>
+              <span style={s.colTime}>Time</span>
+              <span style={s.colDesc}>Description</span>
+              <span style={s.colDuration}>Duration</span>
+              <span style={s.colAction}></span>
+            </div>
 
-      <div style={s.tableWrapper}>
-        <div style={{ ...s.tableHeader, borderBottom: `1px solid ${theme.border}`, color: theme.textMuted }}>
-          <span style={s.colDate}>Date</span>
-          <span style={s.colCategory}>Category</span>
-          <span style={s.colTime}>Time</span>
-          <span style={s.colDesc}>Description</span>
-          <span style={s.colDuration}>Duration</span>
-          <span style={s.colAction}></span>
-        </div>
-
-        <div style={s.tableBody}>
-          {filtered.length === 0 ? (
-            <div style={{ ...s.emptyState, color: theme.textMuted }}>No sessions found</div>
-          ) : (
-            filtered.map((entry) => {
-              const color = CATEGORY_COLORS[entry.category] || theme.accent
-              return (
-                <div
-                  key={entry.id}
-                  style={{ ...s.row, borderBottom: `1px solid ${theme.border}` }}
-                >
-                  <span style={{ ...s.colDate, color: theme.textMuted, fontSize: 12 }}>
-                    {formatDate(entry.created_at)}
-                  </span>
-                  <span style={s.colCategory}>
-                    <span style={{ ...s.categoryPill, background: `${color}22`, color }}>
-                      {entry.category}
-                    </span>
-                    <span style={{ fontSize: 11, color: theme.textMuted, marginLeft: 6 }}>
-                      {entry.subcategory}
-                    </span>
-                  </span>
-                  <span style={{ ...s.colTime, color: theme.textSecondary, fontSize: 12 }}>
-                    {formatClockTime(entry.start_time)} → {formatClockTime(entry.end_time)}
-                  </span>
-                  <span style={{ ...s.colDesc, color: theme.textMuted, fontSize: 12 }}>
-                    {entry.description ? `"${entry.description}"` : '—'}
-                  </span>
-                  <span style={{ ...s.colDuration, color: theme.text, fontWeight: 600, fontSize: 13 }}>
-                    {formatDuration(entry.duration_seconds)}
-                  </span>
-                  <span style={s.colAction}>
-                    <button
-                      onClick={() => handleDelete(entry.id)}
-                      style={{ ...s.deleteBtn, color: theme.textMuted }}
+            <div style={s.tableBody}>
+              {filtered.length === 0 ? (
+                <div style={{ ...s.emptyState, color: theme.textMuted }}>No sessions found</div>
+              ) : (
+                filtered.map((entry) => {
+                  const color = CATEGORY_COLORS[entry.category] || theme.accent
+                  return (
+                    <div
+                      key={entry.id}
+                      style={{ ...s.row, borderBottom: `1px solid ${theme.border}` }}
                     >
-                      ✕
-                    </button>
-                  </span>
-                </div>
-              )
-            })
-          )}
+                      <span style={{ ...s.colDate, color: theme.textMuted, fontSize: 12 }}>
+                        {formatDate(entry.created_at)}
+                      </span>
+                      <span style={s.colCategory}>
+                        <span style={{ ...s.categoryPill, background: `${color}22`, color }}>
+                          {entry.category}
+                        </span>
+                        <span style={{ fontSize: 11, color: theme.textMuted, marginLeft: 6 }}>
+                          {entry.subcategory}
+                        </span>
+                      </span>
+                      <span style={{ ...s.colTime, color: theme.textSecondary, fontSize: 12 }}>
+                        {formatClockTime(entry.start_time)} → {formatClockTime(entry.end_time)}
+                      </span>
+                      <span style={{ ...s.colDesc, color: theme.textMuted, fontSize: 12 }}>
+                        {entry.description ? `"${entry.description}"` : '—'}
+                      </span>
+                      <span style={{ ...s.colDuration, color: theme.text, fontWeight: 600, fontSize: 13 }}>
+                        {formatDuration(entry.duration_seconds)}
+                      </span>
+                      <span style={s.colAction}>
+                        <button
+                          onClick={() => handleDelete(entry.id)}
+                          style={{ ...s.deleteBtn, color: theme.textMuted }}
+                        >
+                          ✕
+                        </button>
+                      </span>
+                    </div>
+                  )
+                })
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -173,6 +179,15 @@ const s = {
     zIndex: 200, display: 'flex', flexDirection: 'column',
     transition: 'transform 0.3s ease',
     overflow: 'hidden',
+  },
+  scaleOuter: {
+    flex: 1, display: 'flex', justifyContent: 'center',
+    alignItems: 'center', overflow: 'hidden',
+  },
+  scaleInner: {
+    width: 1600, height: 880, flexShrink: 0,
+    transformOrigin: 'center center',
+    display: 'flex', flexDirection: 'column',
   },
   header: {
     display: 'flex', alignItems: 'center', gap: 16,
