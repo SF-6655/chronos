@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
 import { useTheme } from '../lib/ThemeContext'
@@ -7,12 +7,16 @@ import Timer from '../components/Timer'
 import StatsCards from '../components/StatsCards'
 import WeeklyChart from '../components/WeeklyChart'
 import RecentSessions from '../components/RecentSessions'
+import StreakBadge from '../components/StreakBadge'
+import SmartInsight from '../components/SmartInsight'
+import DayRing from '../components/DayRing'
 
 export default function Dashboard() {
   const { user } = useAuth()
   const { theme } = useTheme()
   const [entries, setEntries] = useState([])
   const [loading, setLoading] = useState(true)
+  const timerActionRef = useRef(null)
 
   const fetchEntries = useCallback(async () => {
     if (!user) return
@@ -21,7 +25,7 @@ export default function Dashboard() {
       .select('*')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
-      .limit(100)
+      .limit(150)
 
     if (!error) setEntries(data || [])
     setLoading(false)
@@ -31,13 +35,21 @@ export default function Dashboard() {
     fetchEntries()
   }, [fetchEntries])
 
+  // Keyboard shortcut: spacebar to start/stop timer
+  useEffect(() => {
+    function handleKeyPress(e) {
+      if (e.code === 'Space' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+        e.preventDefault()
+        if (timerActionRef.current) timerActionRef.current()
+      }
+    }
+    window.addEventListener('keydown', handleKeyPress)
+    return () => window.removeEventListener('keydown', handleKeyPress)
+  }, [])
+
   if (loading) {
     return (
-      <div style={{
-        minHeight: '100vh', display: 'flex',
-        alignItems: 'center', justifyContent: 'center',
-        background: theme.bg,
-      }}>
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: theme.bg }}>
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: 24, fontWeight: 700, color: theme.accent, marginBottom: 12 }}>⏱ Chronos</div>
           <p style={{ fontSize: 14, color: theme.textMuted }}>Loading your dashboard...</p>
@@ -50,30 +62,32 @@ export default function Dashboard() {
     <div style={{ ...s.page, background: theme.bg, color: theme.text }}>
       <Navbar user={user} />
 
+      <div style={{ padding: '0 20px' }}>
+        <SmartInsight entries={entries} />
+      </div>
+
       <div style={s.layout}>
         {/* Left Column — Timer */}
         <div style={s.leftCol}>
-          <div style={{ ...s.colHeader, color: theme.textMuted }}>
-            <span style={s.colLabel}>Timer</span>
-            <span style={{ ...s.colDate, color: theme.textMuted }}>
-              {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
-            </span>
+          <div style={s.colHeader}>
+            <span style={{ ...s.colLabel, color: theme.textMuted }}>Timer</span>
+            <StreakBadge entries={entries} />
           </div>
           <div style={s.timerWrapper}>
-            <Timer user={user} onEntryAdded={fetchEntries} />
+            <Timer user={user} onEntryAdded={fetchEntries} triggerRef={timerActionRef} />
           </div>
         </div>
 
         {/* Middle Column — Chart + Sessions */}
         <div style={s.midCol}>
-          <div style={{ ...s.colHeader, color: theme.textMuted }}>
-            <span style={s.colLabel}>Weekly Overview</span>
+          <div style={s.colHeader}>
+            <span style={{ ...s.colLabel, color: theme.textMuted }}>Weekly Overview</span>
           </div>
           <div style={s.chartWrapper}>
             <WeeklyChart entries={entries} />
           </div>
-          <div style={{ ...s.colHeader, color: theme.textMuted, marginTop: 12 }}>
-            <span style={s.colLabel}>Sessions</span>
+          <div style={{ ...s.colHeader, marginTop: 12 }}>
+            <span style={{ ...s.colLabel, color: theme.textMuted }}>Sessions</span>
           </div>
           <div style={s.sessionsWrapper}>
             <RecentSessions entries={entries} onDeleted={fetchEntries} />
@@ -82,12 +96,16 @@ export default function Dashboard() {
 
         {/* Right Column — Stats */}
         <div style={s.rightCol}>
-          <div style={{ ...s.colHeader, color: theme.textMuted }}>
-            <span style={s.colLabel}>Stats</span>
+          <div style={s.colHeader}>
+            <span style={{ ...s.colLabel, color: theme.textMuted }}>Stats</span>
           </div>
-          <StatsCards entries={entries} />
 
-          {/* Category breakdown */}
+          <DayRing entries={entries} />
+
+          <div style={{ marginTop: 10 }}>
+            <StatsCards entries={entries} />
+          </div>
+
           <div style={{
             ...s.breakdown,
             background: theme.bgSecondary,
@@ -103,7 +121,7 @@ export default function Dashboard() {
             )
               .sort((a, b) => b[1] - a[1])
               .map(([cat, secs]) => {
-                const total = entries.reduce((s, e) => s + e.duration_seconds, 0)
+                const total = entries.reduce((sum, e) => sum + e.duration_seconds, 0)
                 const pct = total > 0 ? Math.round((secs / total) * 100) : 0
                 const colors = {
                   Study: '#7c6ef5', Work: '#60a5fa', Health: '#4ade80',
@@ -118,11 +136,7 @@ export default function Dashboard() {
                     </div>
                     <div style={s.breakdownRight}>
                       <div style={{ ...s.breakdownBar, background: theme.bgTertiary }}>
-                        <div style={{
-                          ...s.breakdownFill,
-                          width: `${pct}%`,
-                          background: color,
-                        }} />
+                        <div style={{ ...s.breakdownFill, width: `${pct}%`, background: color }} />
                       </div>
                       <span style={{ ...s.breakdownPct, color: theme.textMuted }}>{pct}%</span>
                     </div>
@@ -130,9 +144,7 @@ export default function Dashboard() {
                 )
               })}
             {entries.length === 0 && (
-              <p style={{ fontSize: 12, color: theme.textMuted, textAlign: 'center', padding: '16px 0' }}>
-                No data yet
-              </p>
+              <p style={{ fontSize: 12, color: theme.textMuted, textAlign: 'center', padding: '16px 0' }}>No data yet</p>
             )}
           </div>
         </div>
@@ -142,109 +154,27 @@ export default function Dashboard() {
 }
 
 const s = {
-  page: {
-    height: '100vh',
-    display: 'flex',
-    flexDirection: 'column',
-    overflow: 'hidden',
-  },
+  page: { minHeight: '100vh', display: 'flex', flexDirection: 'column', paddingTop: 12 },
   layout: {
-    display: 'grid',
-    gridTemplateColumns: '300px 1fr 260px',
-    gap: 16,
-    padding: '16px 20px',
-    flex: 1,
-    overflow: 'hidden',
-    maxWidth: 1400,
-    width: '100%',
-    margin: '0 auto',
+    display: 'grid', gridTemplateColumns: '300px 1fr 280px', gap: 16,
+    padding: '12px 20px 16px', flex: 1, maxWidth: 1450, width: '100%', margin: '0 auto',
   },
-  leftCol: {
-    display: 'flex',
-    flexDirection: 'column',
-    overflow: 'hidden',
-  },
-  midCol: {
-    display: 'flex',
-    flexDirection: 'column',
-    overflow: 'hidden',
-  },
-  rightCol: {
-    display: 'flex',
-    flexDirection: 'column',
-    overflow: 'hidden',
-  },
-  colHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  colLabel: {
-    fontSize: 11,
-    fontWeight: 600,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-  },
-  colDate: { fontSize: 11 },
+  leftCol: { display: 'flex', flexDirection: 'column', overflow: 'hidden' },
+  midCol: { display: 'flex', flexDirection: 'column', overflow: 'hidden' },
+  rightCol: { display: 'flex', flexDirection: 'column', overflow: 'hidden' },
+  colHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
+  colLabel: { fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1 },
   timerWrapper: { flex: 1, overflow: 'hidden' },
   chartWrapper: { flexShrink: 0 },
-  sessionsWrapper: {
-    flex: 1,
-    overflow: 'hidden',
-    minHeight: 0,
-  },
-  breakdown: {
-    borderRadius: 14,
-    padding: '16px',
-    marginTop: 10,
-    flex: 1,
-  },
-  breakdownTitle: {
-    fontSize: 14,
-    fontWeight: 600,
-    marginBottom: 14,
-  },
-  breakdownRow: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 10,
-    gap: 8,
-  },
-  breakdownLeft: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 7,
-    minWidth: 90,
-  },
-  breakdownDot: {
-    width: 8,
-    height: 8,
-    borderRadius: '50%',
-    flexShrink: 0,
-  },
+  sessionsWrapper: { flex: 1, overflow: 'hidden', minHeight: 0 },
+  breakdown: { borderRadius: 14, padding: '16px', marginTop: 10, flex: 1 },
+  breakdownTitle: { fontSize: 14, fontWeight: 600, marginBottom: 14 },
+  breakdownRow: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, gap: 8 },
+  breakdownLeft: { display: 'flex', alignItems: 'center', gap: 7, minWidth: 90 },
+  breakdownDot: { width: 8, height: 8, borderRadius: '50%', flexShrink: 0 },
   breakdownCat: { fontSize: 12, fontWeight: 500 },
-  breakdownRight: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 8,
-    flex: 1,
-  },
-  breakdownBar: {
-    flex: 1,
-    height: 4,
-    borderRadius: 2,
-    overflow: 'hidden',
-  },
-  breakdownFill: {
-    height: '100%',
-    borderRadius: 2,
-    transition: 'width 0.6s ease',
-  },
-  breakdownPct: {
-    fontSize: 11,
-    minWidth: 28,
-    textAlign: 'right',
-  },
+  breakdownRight: { display: 'flex', alignItems: 'center', gap: 8, flex: 1 },
+  breakdownBar: { flex: 1, height: 4, borderRadius: 2, overflow: 'hidden' },
+  breakdownFill: { height: '100%', borderRadius: 2, transition: 'width 0.6s ease' },
+  breakdownPct: { fontSize: 11, minWidth: 28, textAlign: 'right' },
 }

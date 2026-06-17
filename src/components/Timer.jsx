@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { useTimer } from '../hooks/useTimer'
 import { useTheme } from '../lib/ThemeContext'
@@ -21,7 +21,7 @@ const CATEGORY_COLORS = {
   Social: '#34d399',
 }
 
-function CircularTimer({ elapsed, isRunning, color, formatTime }) {
+function CircularTimer({ elapsed, isRunning, color, formatTime, justStopped }) {
   const size = 180
   const radius = 78
   const circumference = 2 * Math.PI * radius
@@ -39,7 +39,10 @@ function CircularTimer({ elapsed, isRunning, color, formatTime }) {
           strokeDasharray={circumference}
           strokeDashoffset={strokeDashoffset}
           strokeLinecap="round"
-          style={{ transition: 'stroke-dashoffset 1s linear' }}
+          style={{
+            transition: 'stroke-dashoffset 1s linear',
+            filter: isRunning ? `drop-shadow(0 0 6px ${color}88)` : 'none',
+          }}
         />
       </svg>
       <div style={{
@@ -47,28 +50,38 @@ function CircularTimer({ elapsed, isRunning, color, formatTime }) {
         display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'center',
       }}>
-        <div style={{ fontSize: 32, fontWeight: 800, color, letterSpacing: -1, fontVariantNumeric: 'tabular-nums' }}>
-          {formatTime(elapsed)}
-        </div>
-        {isRunning && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 4 }}>
-            <div style={{ width: 6, height: 6, borderRadius: '50%', background: color, animation: 'pulse 1.5s infinite' }} />
-            <span style={{ fontSize: 11, color, fontWeight: 500 }}>LIVE</span>
-          </div>
+        {justStopped ? (
+          <div style={{ fontSize: 40, animation: 'fadeIn 0.3s ease' }}>✓</div>
+        ) : (
+          <>
+            <div style={{
+              fontSize: 32, fontWeight: 800, color, letterSpacing: -1,
+              fontVariantNumeric: 'tabular-nums',
+            }}>
+              {formatTime(elapsed)}
+            </div>
+            {isRunning && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 4 }}>
+                <div style={{ width: 6, height: 6, borderRadius: '50%', background: color, animation: 'pulse 1.5s infinite' }} />
+                <span style={{ fontSize: 11, color, fontWeight: 500 }}>LIVE</span>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
   )
 }
 
-export default function Timer({ user, onEntryAdded }) {
+export default function Timer({ user, onEntryAdded, triggerRef }) {
   const { theme } = useTheme()
-  const { isRunning, elapsed, start, stop, formatTime } = useTimer()
+  const { isRunning, elapsed, start, stop, formatTime, showIdleNudge, dismissNudge } = useTimer()
   const [category, setCategory] = useState('Study')
   const [subcategory, setSubcategory] = useState('Lectures')
   const [description, setDescription] = useState('')
   const [startTimeISO, setStartTimeISO] = useState(null)
   const [saving, setSaving] = useState(false)
+  const [justStopped, setJustStopped] = useState(false)
 
   const color = CATEGORY_COLORS[category]
 
@@ -101,9 +114,17 @@ export default function Timer({ user, onEntryAdded }) {
     if (!error) {
       onEntryAdded()
       setDescription('')
+      setJustStopped(true)
+      setTimeout(() => setJustStopped(false), 1200)
     }
     setSaving(false)
   }
+
+  useEffect(() => {
+    if (triggerRef) {
+      triggerRef.current = isRunning ? handleStop : handleStart
+    }
+  }, [isRunning])
 
   return (
     <div style={{
@@ -112,11 +133,19 @@ export default function Timer({ user, onEntryAdded }) {
       border: `1px solid ${theme.border}`,
       boxShadow: theme.cardShadow,
     }}>
+      {showIdleNudge && (
+        <div style={{ ...s.nudge, background: theme.accentSoft, border: `1px solid ${theme.accent}` }}>
+          <span style={{ fontSize: 12, color: theme.textSecondary }}>Still working on this? You've been going for 2h+</span>
+          <button onClick={dismissNudge} style={{ ...s.nudgeBtn, color: theme.accent }}>Dismiss</button>
+        </div>
+      )}
+
       <CircularTimer
         elapsed={elapsed}
         isRunning={isRunning}
         color={color}
         formatTime={formatTime}
+        justStopped={justStopped}
       />
 
       <div style={s.categoryGrid}>
@@ -127,9 +156,9 @@ export default function Timer({ user, onEntryAdded }) {
             disabled={isRunning}
             style={{
               ...s.catBtn,
-              background: category === cat ? color : theme.bgTertiary,
+              background: category === cat ? CATEGORY_COLORS[cat] : theme.bgTertiary,
               color: category === cat ? '#fff' : theme.textMuted,
-              border: `1px solid ${category === cat ? color : theme.border}`,
+              border: `1px solid ${category === cat ? CATEGORY_COLORS[cat] : theme.border}`,
               opacity: isRunning && category !== cat ? 0.4 : 1,
             }}
           >
@@ -181,30 +210,23 @@ export default function Timer({ user, onEntryAdded }) {
       >
         {saving ? 'Saving...' : isRunning ? '⏹ Stop & Save' : '▶ Start Timer'}
       </button>
+
+      <div style={{ fontSize: 11, color: theme.textMuted, textAlign: 'center', marginTop: 2 }}>
+        Tip: Press <kbd style={{ ...s.kbd, borderColor: theme.border, background: theme.bgTertiary }}>Space</kbd> to start/stop
+      </div>
     </div>
   )
 }
 
 const s = {
   wrapper: { borderRadius: 16, padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: 12, height: '100%' },
+  nudge: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, padding: '8px 12px', borderRadius: 10, marginBottom: 4 },
+  nudgeBtn: { background: 'transparent', border: 'none', fontSize: 11, fontWeight: 600, cursor: 'pointer', flexShrink: 0 },
   categoryGrid: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6 },
-  catBtn: {
-    padding: '8px 4px', borderRadius: 10,
-    cursor: 'pointer', fontSize: 12, fontWeight: 500,
-    transition: 'all 0.15s', textAlign: 'center',
-  },
+  catBtn: { padding: '8px 4px', borderRadius: 10, cursor: 'pointer', fontSize: 12, fontWeight: 500, transition: 'all 0.15s', textAlign: 'center' },
   subcategoryRow: { display: 'flex', flexWrap: 'wrap', gap: 5 },
-  subBtn: {
-    padding: '4px 10px', borderRadius: 20,
-    cursor: 'pointer', fontSize: 11, transition: 'all 0.15s',
-  },
-  descInput: {
-    borderRadius: 10, padding: '10px 14px',
-    fontSize: 13, outline: 'none', width: '100%',
-  },
-  mainBtn: {
-    width: '100%', padding: '13px', borderRadius: 12,
-    fontSize: 15, fontWeight: 700, cursor: 'pointer',
-    letterSpacing: 0.3, marginTop: 4,
-  },
+  subBtn: { padding: '4px 10px', borderRadius: 20, cursor: 'pointer', fontSize: 11, transition: 'all 0.15s' },
+  descInput: { borderRadius: 10, padding: '10px 14px', fontSize: 13, outline: 'none', width: '100%' },
+  mainBtn: { width: '100%', padding: '13px', borderRadius: 12, fontSize: 15, fontWeight: 700, cursor: 'pointer', letterSpacing: 0.3, marginTop: 4 },
+  kbd: { padding: '1px 6px', borderRadius: 4, border: '1px solid', fontSize: 10, fontFamily: 'monospace' },
 }

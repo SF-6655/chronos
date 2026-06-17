@@ -4,12 +4,17 @@ export function useTimer() {
   const [isRunning, setIsRunning] = useState(false)
   const [elapsed, setElapsed] = useState(0)
   const [startTime, setStartTime] = useState(null)
+  const [showIdleNudge, setShowIdleNudge] = useState(false)
   const intervalRef = useRef(null)
 
   useEffect(() => {
     if (isRunning) {
       intervalRef.current = setInterval(() => {
-        setElapsed(Math.floor((Date.now() - startTime) / 1000))
+        const newElapsed = Math.floor((Date.now() - startTime) / 1000)
+        setElapsed(newElapsed)
+        if (newElapsed > 0 && newElapsed % 7200 === 0) {
+          setShowIdleNudge(true)
+        }
       }, 1000)
     } else {
       clearInterval(intervalRef.current)
@@ -22,6 +27,7 @@ export function useTimer() {
     setStartTime(now)
     setElapsed(0)
     setIsRunning(true)
+    setShowIdleNudge(false)
     return new Date(now).toISOString()
   }
 
@@ -31,7 +37,12 @@ export function useTimer() {
     const duration = elapsed
     setElapsed(0)
     setStartTime(null)
+    setShowIdleNudge(false)
     return { endTime, duration }
+  }
+
+  function dismissNudge() {
+    setShowIdleNudge(false)
   }
 
   function formatTime(seconds) {
@@ -41,5 +52,5 @@ export function useTimer() {
     return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
   }
 
-  return { isRunning, elapsed, start, stop, formatTime }
+  return { isRunning, elapsed, start, stop, formatTime, showIdleNudge, dismissNudge }
 }
