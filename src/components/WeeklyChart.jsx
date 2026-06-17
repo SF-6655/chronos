@@ -42,6 +42,8 @@ export default function WeeklyChart({ entries }) {
       background: theme.bgSecondary,
       border: `1px solid ${theme.border}`,
       boxShadow: theme.cardShadow,
+      backdropFilter: theme.glassBlur,
+      WebkitBackdropFilter: theme.glassBlur,
     }}>
       <div style={s.header}>
         <h2 style={{ ...s.title, color: theme.textSecondary }}>This week</h2>

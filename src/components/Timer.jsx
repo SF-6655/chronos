@@ -127,12 +127,14 @@ export default function Timer({ user, onEntryAdded, triggerRef }) {
   }, [isRunning])
 
   return (
-    <div style={{
-      ...s.wrapper,
-      background: theme.bgSecondary,
-      border: `1px solid ${theme.border}`,
-      boxShadow: theme.cardShadow,
-    }}>
+      <div style={{
+        ...s.wrapper,
+        background: theme.bgSecondary,
+        border: `1px solid ${theme.border}`,
+        boxShadow: theme.cardShadow,
+        backdropFilter: theme.glassBlur,
+        WebkitBackdropFilter: theme.glassBlur,
+      }}>
       {showIdleNudge && (
         <div style={{ ...s.nudge, background: theme.accentSoft, border: `1px solid ${theme.accent}` }}>
           <span style={{ fontSize: 12, color: theme.textSecondary }}>Still working on this? You've been going for 2h+</span>

@@ -30,7 +30,13 @@ export default function RecentSessions({ entries, onViewAll }) {
 
   if (entries.length === 0) {
     return (
-      <div style={{ ...s.empty, background: theme.bgSecondary, border: `1px solid ${theme.border}` }}>
+      <div style={{
+        ...s.empty,
+        background: theme.bgSecondary,
+        border: `1px solid ${theme.border}`,
+        backdropFilter: theme.glassBlur,
+        WebkitBackdropFilter: theme.glassBlur,
+      }}>
         <div style={s.emptyIcon}>⏱</div>
         <p style={{ ...s.emptyText, color: theme.textMuted }}>No sessions yet. Start your first timer.</p>
       </div>
@@ -40,7 +46,14 @@ export default function RecentSessions({ entries, onViewAll }) {
   const recent = entries.slice(0, 4)
 
   return (
-    <div style={{ ...s.wrapper, background: theme.bgSecondary, border: `1px solid ${theme.border}`, boxShadow: theme.cardShadow }}>
+    <div style={{
+      ...s.wrapper,
+      background: theme.bgSecondary,
+      border: `1px solid ${theme.border}`,
+      boxShadow: theme.cardShadow,
+      backdropFilter: theme.glassBlur,
+      WebkitBackdropFilter: theme.glassBlur,
+    }}>
       <div style={s.header}>
         <h2 style={{ ...s.title, color: theme.textSecondary }}>Recent sessions</h2>
         <button onClick={onViewAll} style={{ ...s.viewAllBtn, color: theme.accent }}>

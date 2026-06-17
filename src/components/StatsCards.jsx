@@ -37,6 +37,8 @@ export default function StatsCards({ entries }) {
           background: theme.bgSecondary,
           border: `1px solid ${theme.border}`,
           boxShadow: theme.cardShadow,
+          backdropFilter: theme.glassBlur,
+          WebkitBackdropFilter: theme.glassBlur,
         }}>
           <div style={{ ...s.accent, background: stat.color }} />
           <div style={s.content}>
