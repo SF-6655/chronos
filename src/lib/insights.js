@@ -8,7 +8,6 @@ export function calculateStreak(entries) {
   let streak = 0
   let checkDate = new Date()
 
-  // If no entry today, check if yesterday was tracked to keep streak alive until end of day
   if (!daysWithEntries.has(checkDate.toDateString())) {
     checkDate.setDate(checkDate.getDate() - 1)
     if (!daysWithEntries.has(checkDate.toDateString())) {
@@ -103,7 +102,7 @@ export function getDayAccountedFor(entries) {
   const today = new Date().toDateString()
   const todayEntries = entries.filter(e => new Date(e.created_at).toDateString() === today)
   const trackedSeconds = todayEntries.reduce((sum, e) => sum + (e.duration_seconds || 0), 0)
-  const totalDaySeconds = 16 * 3600 // assume 16 waking hours
+  const totalDaySeconds = 16 * 3600
   const untrackedSeconds = Math.max(totalDaySeconds - trackedSeconds, 0)
 
   const categoryColors = {

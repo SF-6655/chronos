@@ -7,6 +7,7 @@ import Timer from '../components/Timer'
 import StatsCards from '../components/StatsCards'
 import WeeklyChart from '../components/WeeklyChart'
 import RecentSessions from '../components/RecentSessions'
+import SessionsTable from '../components/SessionsTable'
 import StreakBadge from '../components/StreakBadge'
 import SmartInsight from '../components/SmartInsight'
 import DayRing from '../components/DayRing'
@@ -16,6 +17,7 @@ export default function Dashboard() {
   const { theme } = useTheme()
   const [entries, setEntries] = useState([])
   const [loading, setLoading] = useState(true)
+  const [showTable, setShowTable] = useState(false)
   const timerActionRef = useRef(null)
 
   const fetchEntries = useCallback(async () => {
@@ -35,17 +37,19 @@ export default function Dashboard() {
     fetchEntries()
   }, [fetchEntries])
 
-  // Keyboard shortcut: spacebar to start/stop timer
   useEffect(() => {
     function handleKeyPress(e) {
-      if (e.code === 'Space' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+      if (e.code === 'Space' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA' && !showTable) {
         e.preventDefault()
         if (timerActionRef.current) timerActionRef.current()
+      }
+      if (e.code === 'Escape' && showTable) {
+        setShowTable(false)
       }
     }
     window.addEventListener('keydown', handleKeyPress)
     return () => window.removeEventListener('keydown', handleKeyPress)
-  }, [])
+  }, [showTable])
 
   if (loading) {
     return (
@@ -90,7 +94,7 @@ export default function Dashboard() {
             <span style={{ ...s.colLabel, color: theme.textMuted }}>Sessions</span>
           </div>
           <div style={s.sessionsWrapper}>
-            <RecentSessions entries={entries} onDeleted={fetchEntries} />
+            <RecentSessions entries={entries} onViewAll={() => setShowTable(true)} />
           </div>
         </div>
 
@@ -149,6 +153,13 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+
+      <SessionsTable
+        entries={entries}
+        isOpen={showTable}
+        onClose={() => setShowTable(false)}
+        onDeleted={fetchEntries}
+      />
     </div>
   )
 }
