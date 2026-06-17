@@ -151,7 +151,7 @@ export default function Dashboard() {
 
               <DayRing entries={entries} />
 
-              <div style={{ marginTop: 8 }}>
+              <div style={{ marginTop: 8, flex: 1, display: 'flex', flexDirection: 'column' }}>
                 <StatsCards entries={entries} />
               </div>
             </div>
@@ -182,15 +182,15 @@ const s = {
   layout: {
     display: 'grid', gridTemplateColumns: '300px 1fr 280px', gap: 16,
   },
-  leftCol: { display: 'flex', flexDirection: 'column' },
-  midCol: { display: 'flex', flexDirection: 'column' },
-  rightCol: { display: 'flex', flexDirection: 'column' },
+  leftCol: { display: 'flex', flexDirection: 'column', height: 800 },
+  midCol: { display: 'flex', flexDirection: 'column', height: 800 },
+  rightCol: { display: 'flex', flexDirection: 'column', height: 800 },
   colHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
   colLabel: { fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1 },
-  timerWrapper: {},
-  chartWrapper: { flexShrink: 0 },
-  sessionsWrapper: {},
-  breakdown: { borderRadius: 14, padding: '16px', marginTop: 10 },
+timerWrapper: { flexShrink: 0 },
+chartWrapper: { flexShrink: 0 },
+sessionsWrapper: { flex: 1, minHeight: 0, overflow: 'hidden' },
+breakdown: { borderRadius: 14, padding: '16px', marginTop: 10, flex: 1, overflowY: 'auto', minHeight: 0 },
   breakdownTitle: { fontSize: 14, fontWeight: 600, marginBottom: 14 },
   breakdownRow: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, gap: 8 },
   breakdownLeft: { display: 'flex', alignItems: 'center', gap: 7, minWidth: 90 },

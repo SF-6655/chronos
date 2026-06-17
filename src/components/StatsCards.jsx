@@ -53,7 +53,7 @@ export default function StatsCards({ entries }) {
 const s = {
   grid: {
     display: 'grid', gridTemplateColumns: '1fr',
-    gap: 10, marginBottom: 12,
+    gap: 10, marginBottom: 12, flex: 1,
   },
   card: {
     borderRadius: 14, overflow: 'hidden',
