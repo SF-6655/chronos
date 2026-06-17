@@ -1,24 +1,28 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 
-export function useAutoScale(designWidth = 1920, designHeight = 1000) {
+export function useAutoScale(designWidth = 1600, designHeight = 880) {
   const [scale, setScale] = useState(1)
-  const containerRef = useRef(null)
+  const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
     function calculateScale() {
       const vw = window.innerWidth
       const vh = window.innerHeight
 
-      // Don't scale on mobile - let it stack naturally
       if (vw < 900) {
+        setIsMobile(true)
         setScale(1)
         return
       }
 
+      setIsMobile(false)
+
+      const availableHeight = vh - 56 // navbar height
       const scaleX = vw / designWidth
-      const scaleY = vh / designHeight
-      const newScale = Math.min(scaleX, scaleY, 1.15)
-      setScale(Math.max(newScale, 0.55))
+      const scaleY = availableHeight / designHeight
+      const newScale = Math.min(scaleX, scaleY)
+
+      setScale(newScale)
     }
 
     calculateScale()
@@ -26,5 +30,5 @@ export function useAutoScale(designWidth = 1920, designHeight = 1000) {
     return () => window.removeEventListener('resize', calculateScale)
   }, [designWidth, designHeight])
 
-  return { scale, containerRef }
+  return { scale, isMobile }
 }

@@ -64,21 +64,29 @@ export default function Dashboard() {
     )
   }
 
+  const categoryTotals = entries.reduce((acc, e) => {
+    acc[e.category] = (acc[e.category] || 0) + e.duration_seconds
+    return acc
+  }, {})
+  const categoryColors = {
+    Study: '#7c6ef5', Work: '#60a5fa', Health: '#4ade80',
+    Lifestyle: '#f59e0b', 'Side Project': '#f472b6', Social: '#34d399',
+  }
+  const totalSeconds = entries.reduce((sum, e) => sum + e.duration_seconds, 0)
+  const sortedCategories = Object.entries(categoryTotals).sort((a, b) => b[1] - a[1])
+
   return (
     <div style={{ ...s.page, background: theme.bg, color: theme.text }}>
       <Navbar user={user} />
 
       <div style={s.scaleOuter}>
-        <div style={{
-          ...s.scaleInner,
-          transform: `scale(${scale})`,
-        }}>
+        <div style={{ ...s.scaleInner, transform: `scale(${scale})` }}>
           <div style={{ padding: '0 0 12px' }}>
             <SmartInsight entries={entries} />
           </div>
 
           <div style={s.layout}>
-            {/* Left Column — Timer */}
+            {/* Left Column — Timer + Breakdown */}
             <div style={s.leftCol}>
               <div style={s.colHeader}>
                 <span style={{ ...s.colLabel, color: theme.textMuted }}>Timer</span>
@@ -86,6 +94,36 @@ export default function Dashboard() {
               </div>
               <div style={s.timerWrapper}>
                 <Timer user={user} onEntryAdded={fetchEntries} triggerRef={timerActionRef} />
+              </div>
+
+              <div style={{
+                ...s.breakdown,
+                background: theme.bgSecondary,
+                border: `1px solid ${theme.border}`,
+                boxShadow: theme.cardShadow,
+              }}>
+                <div style={{ ...s.breakdownTitle, color: theme.textSecondary }}>Category breakdown</div>
+                {sortedCategories.map(([cat, secs]) => {
+                  const pct = totalSeconds > 0 ? Math.round((secs / totalSeconds) * 100) : 0
+                  const color = categoryColors[cat] || '#7c6ef5'
+                  return (
+                    <div key={cat} style={s.breakdownRow}>
+                      <div style={s.breakdownLeft}>
+                        <div style={{ ...s.breakdownDot, background: color }} />
+                        <span style={{ ...s.breakdownCat, color: theme.text }}>{cat}</span>
+                      </div>
+                      <div style={s.breakdownRight}>
+                        <div style={{ ...s.breakdownBar, background: theme.bgTertiary }}>
+                          <div style={{ ...s.breakdownFill, width: `${pct}%`, background: color }} />
+                        </div>
+                        <span style={{ ...s.breakdownPct, color: theme.textMuted }}>{pct}%</span>
+                      </div>
+                    </div>
+                  )
+                })}
+                {entries.length === 0 && (
+                  <p style={{ fontSize: 12, color: theme.textMuted, textAlign: 'center', padding: '16px 0' }}>No data yet</p>
+                )}
               </div>
             </div>
 
@@ -105,7 +143,7 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Right Column — Stats */}
+            {/* Right Column — Stats only */}
             <div style={s.rightCol}>
               <div style={s.colHeader}>
                 <span style={{ ...s.colLabel, color: theme.textMuted }}>Stats</span>
@@ -115,48 +153,6 @@ export default function Dashboard() {
 
               <div style={{ marginTop: 8 }}>
                 <StatsCards entries={entries} />
-              </div>
-
-              <div style={{
-                ...s.breakdown,
-                background: theme.bgSecondary,
-                border: `1px solid ${theme.border}`,
-                boxShadow: theme.cardShadow,
-              }}>
-                <div style={{ ...s.breakdownTitle, color: theme.textSecondary }}>Category breakdown</div>
-                {Object.entries(
-                  entries.reduce((acc, e) => {
-                    acc[e.category] = (acc[e.category] || 0) + e.duration_seconds
-                    return acc
-                  }, {})
-                )
-                  .sort((a, b) => b[1] - a[1])
-                  .map(([cat, secs]) => {
-                    const total = entries.reduce((sum, e) => sum + e.duration_seconds, 0)
-                    const pct = total > 0 ? Math.round((secs / total) * 100) : 0
-                    const colors = {
-                      Study: '#7c6ef5', Work: '#60a5fa', Health: '#4ade80',
-                      Lifestyle: '#f59e0b', 'Side Project': '#f472b6', Social: '#34d399',
-                    }
-                    const color = colors[cat] || '#7c6ef5'
-                    return (
-                      <div key={cat} style={s.breakdownRow}>
-                        <div style={s.breakdownLeft}>
-                          <div style={{ ...s.breakdownDot, background: color }} />
-                          <span style={{ ...s.breakdownCat, color: theme.text }}>{cat}</span>
-                        </div>
-                        <div style={s.breakdownRight}>
-                          <div style={{ ...s.breakdownBar, background: theme.bgTertiary }}>
-                            <div style={{ ...s.breakdownFill, width: `${pct}%`, background: color }} />
-                          </div>
-                          <span style={{ ...s.breakdownPct, color: theme.textMuted }}>{pct}%</span>
-                        </div>
-                      </div>
-                    )
-                  })}
-                {entries.length === 0 && (
-                  <p style={{ fontSize: 12, color: theme.textMuted, textAlign: 'center', padding: '16px 0' }}>No data yet</p>
-                )}
               </div>
             </div>
           </div>
@@ -177,18 +173,18 @@ const s = {
   page: { height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' },
   scaleOuter: {
     flex: 1, display: 'flex', justifyContent: 'center',
-    alignItems: 'flex-start', overflow: 'hidden', position: 'relative',
+    alignItems: 'center', overflow: 'hidden', position: 'relative',
   },
   scaleInner: {
-    width: 1600, flexShrink: 0, transformOrigin: 'top center',
+    width: 1600, flexShrink: 0, transformOrigin: 'center center',
     padding: '14px 20px 0',
   },
   layout: {
     display: 'grid', gridTemplateColumns: '300px 1fr 280px', gap: 16,
   },
-  leftCol: { display: 'flex', flexDirection: 'column', overflow: 'hidden' },
-  midCol: { display: 'flex', flexDirection: 'column', overflow: 'hidden' },
-  rightCol: { display: 'flex', flexDirection: 'column', overflow: 'hidden' },
+  leftCol: { display: 'flex', flexDirection: 'column' },
+  midCol: { display: 'flex', flexDirection: 'column' },
+  rightCol: { display: 'flex', flexDirection: 'column' },
   colHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
   colLabel: { fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1 },
   timerWrapper: {},
