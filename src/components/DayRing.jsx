@@ -37,8 +37,8 @@ export default function DayRing({ entries }) {
           </PieChart>
         </ResponsiveContainer>
         <div style={s.centerLabel}>
-          <div style={{ fontSize: 22, fontWeight: 800, color: theme.accent }}>{pct}%</div>
-          <div style={{ fontSize: 10, color: theme.textMuted }}>{trackedHours}h tracked</div>
+        <div style={{ fontSize: 26, fontWeight: 800, color: theme.accent }}>{pct}%</div>
+        <div style={{ fontSize: 12, color: theme.textMuted }}>{trackedHours}h tracked</div>
         </div>
       </div>
     </div>
@@ -46,8 +46,8 @@ export default function DayRing({ entries }) {
 }
 
 const s = {
-  wrapper: { borderRadius: 14, padding: '16px', position: 'relative' },
-  title: { fontSize: 13, fontWeight: 600, marginBottom: 4 },
+  wrapper: { borderRadius: 14, padding: '20px', position: 'relative' },
+  title: { fontSize: 15, fontWeight: 600, marginBottom: 6 },
   chartArea: { position: 'relative', display: 'flex', justifyContent: 'center' },
   centerLabel: {
     position: 'absolute', top: '50%', left: '50%',

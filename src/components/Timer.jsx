@@ -22,8 +22,8 @@ const CATEGORY_COLORS = {
 }
 
 function CircularTimer({ elapsed, isRunning, color, formatTime, justStopped }) {
-  const size = 180
-  const radius = 78
+  const size = 200
+  const radius = 86
   const circumference = 2 * Math.PI * radius
   const maxSeconds = 3600
   const progress = Math.min(elapsed / maxSeconds, 1)
@@ -55,7 +55,7 @@ function CircularTimer({ elapsed, isRunning, color, formatTime, justStopped }) {
         ) : (
           <>
             <div style={{
-              fontSize: 32, fontWeight: 800, color, letterSpacing: -1,
+              fontSize: 38, fontWeight: 800, color, letterSpacing: -1,
               fontVariantNumeric: 'tabular-nums',
             }}>
               {formatTime(elapsed)}
@@ -221,14 +221,14 @@ export default function Timer({ user, onEntryAdded, triggerRef }) {
 }
 
 const s = {
-  wrapper: { borderRadius: 16, padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: 12, height: '100%' },
-  nudge: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, padding: '8px 12px', borderRadius: 10, marginBottom: 4 },
-  nudgeBtn: { background: 'transparent', border: 'none', fontSize: 11, fontWeight: 600, cursor: 'pointer', flexShrink: 0 },
-  categoryGrid: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6 },
-  catBtn: { padding: '8px 4px', borderRadius: 10, cursor: 'pointer', fontSize: 12, fontWeight: 500, transition: 'all 0.15s', textAlign: 'center' },
-  subcategoryRow: { display: 'flex', flexWrap: 'wrap', gap: 5 },
-  subBtn: { padding: '4px 10px', borderRadius: 20, cursor: 'pointer', fontSize: 11, transition: 'all 0.15s' },
-  descInput: { borderRadius: 10, padding: '10px 14px', fontSize: 13, outline: 'none', width: '100%' },
-  mainBtn: { width: '100%', padding: '13px', borderRadius: 12, fontSize: 15, fontWeight: 700, cursor: 'pointer', letterSpacing: 0.3, marginTop: 4 },
-  kbd: { padding: '1px 6px', borderRadius: 4, border: '1px solid', fontSize: 10, fontFamily: 'monospace' },
+  wrapper: { borderRadius: 16, padding: '28px 24px', display: 'flex', flexDirection: 'column', gap: 16, height: '100%' },
+  nudge: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, padding: '10px 14px', borderRadius: 10, marginBottom: 4 },
+  nudgeBtn: { background: 'transparent', border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer', flexShrink: 0 },
+  categoryGrid: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 },
+  catBtn: { padding: '12px 6px', borderRadius: 10, cursor: 'pointer', fontSize: 14, fontWeight: 600, transition: 'all 0.15s', textAlign: 'center' },
+  subcategoryRow: { display: 'flex', flexWrap: 'wrap', gap: 7 },
+  subBtn: { padding: '7px 14px', borderRadius: 20, cursor: 'pointer', fontSize: 13, transition: 'all 0.15s' },
+  descInput: { borderRadius: 10, padding: '13px 16px', fontSize: 14, outline: 'none', width: '100%' },
+  mainBtn: { width: '100%', padding: '16px', borderRadius: 12, fontSize: 17, fontWeight: 700, cursor: 'pointer', letterSpacing: 0.3, marginTop: 4 },
+  kbd: { padding: '2px 7px', borderRadius: 4, border: '1px solid', fontSize: 11, fontFamily: 'monospace' },
 }

@@ -52,8 +52,8 @@ export default function WeeklyChart({ entries }) {
       <ResponsiveContainer width="100%" height={180}>
         <BarChart data={data} margin={{ top: 0, right: 0, left: -28, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke={theme.border} vertical={false} />
-          <XAxis dataKey="day" tick={{ fill: theme.textMuted, fontSize: 11 }} axisLine={false} tickLine={false} />
-          <YAxis tick={{ fill: theme.textMuted, fontSize: 11 }} axisLine={false} tickLine={false} />
+        <XAxis dataKey="day" tick={{ fill: theme.textMuted, fontSize: 12 }} axisLine={false} tickLine={false} />
+        <YAxis tick={{ fill: theme.textMuted, fontSize: 12 }} axisLine={false} tickLine={false} />
           <Tooltip
             contentStyle={{
               background: theme.bgSecondary,
@@ -78,8 +78,8 @@ export default function WeeklyChart({ entries }) {
 }
 
 const s = {
-  wrapper: { borderRadius: 14, padding: '20px 20px 8px' },
-  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
-  title: { fontSize: 14, fontWeight: 600 },
-  subtitle: { fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5 },
+  wrapper: { borderRadius: 14, padding: '24px 24px 12px' },
+  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 },
+  title: { fontSize: 16, fontWeight: 600 },
+  subtitle: { fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.5 },
 }

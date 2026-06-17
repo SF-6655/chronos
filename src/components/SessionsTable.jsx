@@ -40,7 +40,7 @@ function formatClockTime(dateStr) {
 
 export default function SessionsTable({ entries, isOpen, onClose, onDeleted }) {
   const { theme } = useTheme()
-  const { scale } = useAutoScale(1600, 880)
+  const { scale } = useAutoScale(1600, 960)
   const [filterCategory, setFilterCategory] = useState('All')
   const [sortBy, setSortBy] = useState('newest')
 
@@ -185,7 +185,7 @@ const s = {
     alignItems: 'center', overflow: 'hidden',
   },
   scaleInner: {
-    width: 1600, height: 880, flexShrink: 0,
+    width: 1600, height: 960, flexShrink: 0,
     transformOrigin: 'center center',
     display: 'flex', flexDirection: 'column',
   },

@@ -55,16 +55,16 @@ export default function StatsCards({ entries }) {
 const s = {
   grid: {
     display: 'grid', gridTemplateColumns: '1fr',
-    gap: 10, marginBottom: 12, flex: 1,
+    gap: 12, marginBottom: 12, flex: 1,
   },
   card: {
     borderRadius: 14, overflow: 'hidden',
     display: 'flex', flexDirection: 'row', alignItems: 'stretch',
     transition: 'transform 0.15s ease',
   },
-  accent: { width: 4, flexShrink: 0 },
-  content: { padding: '16px 18px', flex: 1 },
-  icon: { fontSize: 18, marginBottom: 6 },
-  value: { fontSize: 22, fontWeight: 700, marginBottom: 2 },
-  label: { fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5 },
+  accent: { width: 5, flexShrink: 0 },
+  content: { padding: '20px 22px', flex: 1 },
+  icon: { fontSize: 22, marginBottom: 8 },
+  value: { fontSize: 28, fontWeight: 700, marginBottom: 4 },
+  label: { fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.5 },
 }

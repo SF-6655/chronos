@@ -14,11 +14,13 @@ import SmartInsight from '../components/SmartInsight'
 import DayRing from '../components/DayRing'
 import GridBackground from '../components/GridBackground'
 import AmbientOrbs from '../components/AmbientOrbs'
+import AnalogueClock from '../components/AnalogueClock'
+import DigitalClock from '../components/DigitalClock'
 
 export default function Dashboard() {
   const { user } = useAuth()
   const { theme } = useTheme()
-  const { scale } = useAutoScale(1600, 880)
+  const { scale } = useAutoScale(1600, 960)
   const [entries, setEntries] = useState([])
   const [loading, setLoading] = useState(true)
   const [showTable, setShowTable] = useState(false)
@@ -77,10 +79,17 @@ export default function Dashboard() {
   const totalSeconds = entries.reduce((sum, e) => sum + e.duration_seconds, 0)
   const sortedCategories = Object.entries(categoryTotals).sort((a, b) => b[1] - a[1])
 
-return (
-  <div style={{ ...s.page, background: theme.bg, color: theme.text }}>
-    <AmbientOrbs />
-    <GridBackground />
+  return (
+    <div style={{ ...s.page, background: theme.bg, color: theme.text }}>
+      <AmbientOrbs />
+      <GridBackground />
+
+      <div style={s.marginClockLeft}>
+        <AnalogueClock />
+      </div>
+      <div style={s.marginClockRight}>
+        <DigitalClock />
+      </div>
 
       <div style={s.content}>
         <Navbar user={user} />
@@ -107,7 +116,8 @@ return (
                   background: theme.bgSecondary,
                   border: `1px solid ${theme.border}`,
                   boxShadow: theme.cardShadow,
-                  backdropFilter: 'blur(12px)',
+                  backdropFilter: theme.glassBlur,
+                  WebkitBackdropFilter: theme.glassBlur,
                 }}>
                   <div style={{ ...s.breakdownTitle, color: theme.textSecondary }}>Category breakdown</div>
                   {sortedCategories.map(([cat, secs]) => {
@@ -183,6 +193,24 @@ const s = {
     position: 'relative', zIndex: 1, height: '100%',
     display: 'flex', flexDirection: 'column',
   },
+marginClockLeft: {
+  position: 'fixed',
+  left: 24,
+  top: '50%',
+  transform: 'translateY(-50%) scale(0.75)',
+  transformOrigin: 'left center',
+  zIndex: 1,
+  pointerEvents: 'none',
+},
+marginClockRight: {
+  position: 'fixed',
+  right: 24,
+  top: '50%',
+  transform: 'translateY(-50%) scale(0.75)',
+  transformOrigin: 'right center',
+  zIndex: 99999,
+  pointerEvents: 'auto',
+},
   scaleOuter: {
     flex: 1, display: 'flex', justifyContent: 'center',
     alignItems: 'center', overflow: 'hidden', position: 'relative',
@@ -194,22 +222,22 @@ const s = {
   layout: {
     display: 'grid', gridTemplateColumns: '300px 1fr 280px', gap: 16,
   },
-  leftCol: { display: 'flex', flexDirection: 'column', height: 800 },
-  midCol: { display: 'flex', flexDirection: 'column', height: 800 },
-  rightCol: { display: 'flex', flexDirection: 'column', height: 800 },
-  colHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
-  colLabel: { fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1 },
+  leftCol: { display: 'flex', flexDirection: 'column', height: 870 },
+  midCol: { display: 'flex', flexDirection: 'column', height: 870 },
+  rightCol: { display: 'flex', flexDirection: 'column', height: 870 },
+  colHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
+  colLabel: { fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 },
   timerWrapper: { flexShrink: 0 },
   chartWrapper: { flexShrink: 0 },
-  sessionsWrapper: { flex: 1, minHeight: 0, overflow: 'hidden' },
-  breakdown: { borderRadius: 14, padding: '16px', marginTop: 10, flex: 1, overflowY: 'auto', minHeight: 0 },
-  breakdownTitle: { fontSize: 14, fontWeight: 600, marginBottom: 14 },
+  sessionsWrapper: { flex: 1, minHeight: 0, maxHeight: '100%', overflow: 'hidden' },
+  breakdown: { borderRadius: 14, padding: '20px', marginTop: 12, flex: 1, overflowY: 'auto', minHeight: 0, maxHeight: '100%' },
+  breakdownTitle: { fontSize: 16, fontWeight: 600, marginBottom: 16 },
   breakdownRow: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, gap: 8 },
   breakdownLeft: { display: 'flex', alignItems: 'center', gap: 7, minWidth: 90 },
   breakdownDot: { width: 8, height: 8, borderRadius: '50%', flexShrink: 0 },
-  breakdownCat: { fontSize: 12, fontWeight: 500 },
+  breakdownCat: { fontSize: 14, fontWeight: 500 },
   breakdownRight: { display: 'flex', alignItems: 'center', gap: 8, flex: 1 },
   breakdownBar: { flex: 1, height: 4, borderRadius: 2, overflow: 'hidden' },
   breakdownFill: { height: '100%', borderRadius: 2, transition: 'width 0.6s ease' },
-  breakdownPct: { fontSize: 11, minWidth: 28, textAlign: 'right' },
+  breakdownPct: { fontSize: 13, minWidth: 32, textAlign: 'right' },
 }
