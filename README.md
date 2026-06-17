@@ -1,16 +1,148 @@
-# React + Vite
+# ⏱ Chronos
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern productivity dashboard designed to help you track your time, build consistency, and gain insights into how you spend your day.
 
-Currently, two official plugins are available:
+🔗 Live Demo: YOUR_DEPLOYMENT_URL_HERE
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+---
 
-## React Compiler
+## What it does
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+* Track focused work sessions with a built-in timer
+* Categorize activities (Study, Work, Health, Lifestyle, Side Projects, Social)
+* Visualize weekly productivity trends
+* View recent sessions and historical records
+* Monitor productivity streaks
+* Receive smart insights based on your tracked data
+* See category breakdowns and time allocation percentages
+* Built-in analogue and digital clocks
+* Set alarms directly inside the dashboard
+* Responsive auto-scaling layout for different screen sizes
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Who it's for
+
+Students, freelancers, remote workers, developers, creators, and anyone who wants a clear picture of where their time is going.
+
+Whether you're studying for exams, building projects, or managing client work, Chronos helps you stay intentional with your time.
+
+---
+
+## Features
+
+### ⏱ Session Tracking
+
+Track work sessions with a clean timer interface and automatically save entries.
+
+### 📊 Analytics Dashboard
+
+View productivity trends, weekly charts, category breakdowns, and historical activity.
+
+### 🔥 Streak System
+
+Build consistency by maintaining daily productivity streaks.
+
+### 🧠 Smart Insights
+
+Generate personalized observations based on your tracked sessions and habits.
+
+### 🕒 Clock & Alarm Widgets
+
+Built-in analogue and digital clocks with alarm functionality integrated directly into the dashboard.
+
+### ☁️ Cloud Sync
+
+All data is securely stored and synced using Supabase.
+
+---
+
+## Tech Stack
+
+* React
+* Vite
+* Supabase (Authentication + Database)
+* JavaScript
+* CSS-in-JS Styling
+* Recharts (for analytics visualizations)
+* Component-Based Architecture
+
+---
+
+## Running Locally
+
+### Clone the repository
+
+```bash
+git clone https://github.com/YOUR_USERNAME/chronos.git
+cd chronos
+```
+
+### Install dependencies
+
+```bash
+npm install
+```
+
+### Create a .env file
+
+```env
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+### Start development server
+
+```bash
+npm run dev
+```
+
+---
+
+## Project Structure
+
+```text
+src/
+├── components/
+│   ├── Timer
+│   ├── WeeklyChart
+│   ├── StatsCards
+│   ├── SmartInsight
+│   ├── RecentSessions
+│   ├── SessionsTable
+│   ├── AnalogueClock
+│   └── DigitalClock
+├── hooks/
+├── lib/
+├── pages/
+└── styles/
+```
+
+---
+
+## What I Learned
+
+* Building a scalable dashboard architecture using React
+* Designing responsive layouts with dynamic scaling
+* Integrating Supabase Authentication and Database services
+* Managing complex state across multiple interconnected widgets
+* Creating reusable visualization and analytics components
+* Building productivity-focused UX with real-time data updates
+* Working with timers, session tracking, and data aggregation logic
+* Implementing glassmorphism UI and modern dashboard design patterns
+
+---
+
+## Future Improvements
+
+* Multiple alarms
+* Custom productivity goals
+* Calendar integration
+* Session tags and filtering
+* Export productivity reports
+* AI-powered productivity recommendations
+* Team and shared workspaces
+
+---
+
+Built with ❤️ using React and Supabase.
